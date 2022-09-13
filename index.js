@@ -1,30 +1,18 @@
-import express, { request } from 'express';
+import { config } from "./dbconfig.js";
+import express from "express";
+import mysql from 'mysql';
 
-import { diakok } from './data.js';
+const app = express()
+app.use(express.json())
+const db=mysql.createConnection(config)
 
-const app = express();
-app.use(express.json());
-
-app.get('/',(request,response)=>{
-    //response.send('Saját szerverünk küldi ezt az üzenetet!')
-    response.send(diakok)
+app.get('/',(request,response) => {
+    db.query('SELECT id,author FROM books GROUP BY author ORDER BY author',(error,result)=>{
+        if(error)
+            console.log("Hiba")
+        else
+            response.send(result)
+    })
 })
 
-app.get('/:id',(request,response)=>{
-    const {id} = request.params
-    const filteredArr=diakok.filter(obj=>obj.id==id)
-    response.send(filteredArr)
-})
-
-app.post('/',(request,response)=>{
-    const {id,nev,osztaly}=request.body
-    diakok.push({id:id,nev:nev,osztaly:osztaly})
-    response.send(diakok)
-})
-
-app.get('*',(request,response)=>{
-    response.status(404).send('Az oldal nem létezik...')
-})
-
-app.listen(5000,() => console.log(`server listening on port 5000...`))
-
+app.listen(5000,() => console.log('server listening on port'))
